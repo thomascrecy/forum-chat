@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>Cathub - {{.PostData.Title}}</title>
+</head>
+<body class="centered-page">
+  <a onclick="window.history.go(-1); return false;" class="back-arrow">
+    <i class='bx bx-arrow-back'></i>
+  </a>
+
+  <div class="view-post-body">
+    
+    <!-- CONTENU DU POST -->
+    <div class="view-container-post">
+      <div class="view-post-info">
+        <div class="post-info-header">
+          <img src="{{if not .AuthorData.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.AuthorData.ID}}{{end}}" alt="profile" class="profile-picture mini">
+          <h4 class="post-author"><a href="/profile?user={{.AuthorData.ID}}">{{.AuthorData.Username}}</a> - {{.PostData.CreatedAtFormatted}} | <a class="community-tag" href="/race/{{.PostData.Community.Cid}}">{{.PostData.Community.Name}}</a></h4>  
+        </div>        <h2 class="view-post-title {{if .PostData.IsCurrentUserAuthor}}editable{{end}}" id="post-title">{{.PostData.Title}}</h2>
+        <h4 class="view-post-content {{if .PostData.IsCurrentUserAuthor}}editable{{end}}" id="post-content">{{.PostData.Content}}</h4>
+        <div class="post-tags-container">
+          {{range .PostData.Tags}}
+            <div class="post-tags" style="background-color: #{{.Color}};">
+              <p>{{.Name}}</p>
+            </div>
+          {{end}}
+        </div>
+
+        <!-- LIKE LE POST-->
+        <div class="view-post-interaction">
+          <form class="Method" method="post" action="/like?postId={{ .PostData.ID }}">
+            <button type="submit" style="background: none; border: none; cursor: pointer;">
+              {{if not .PostData.Liked}}
+                  <i class='bx bxs-like' style='font-size: 25px; color: white;'></i>
+                  <span style="font-size: 25px; color: white;">{{.PostData.LikesNumber}}</span>
+              {{else}}
+                  <i class='bx bxs-like' style='font-size: 25px; color: orange;'></i>
+                  <span style="font-size: 25px; color: orange;">{{.PostData.LikesNumber}}</span>
+              {{end}}
+          </button>
+          <span style="margin-left: 15px;"></span>
+            <i class='bx bxs-comment' style='font-size: 25px; color: white;'></i>
+            <span style="font-size: 25px; color: white;">{{.PostData.CommentsLength}}</span>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMENTER LE POST -->
+    <div class="view-post-comment-container">
+      <form class="Method" method="post" action="/comment?id={{ .PostData.ID }}">
+        <input type="text" class="comment-input" name="content" placeholder="Ajouter un commentaire" required {{if not .IsAuth}}disabled{{end}}>
+        <button class="post-comment-button" type="submit">
+          <i class='bx bxs-right-arrow-circle'></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Liste des commentaires -->
+    <div class="view-post-all-comments">
+      <h2>Commentaires :</h2>
+      <div class="comments">
+        {{if not .Comments}}
+          <p>Soyez le premier à commenter...</p>
+        {{end}}
+
+        {{range .Comments}}
+          <div class="comment-container-post">
+            <div class="comment-info">
+              <div class="post-info-header">
+                <img src="{{if not .AuthorData.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.AuthorData.ID}}{{end}}" alt="profile" class="profile-picture mini">
+                <h4 class="post-author"><a href="/profile?user={{.AuthorData.ID}}">{{.AuthorData.Username}}</a> - {{.CreatedAtFormatted}}</h4>  
+              </div>              <h4 class="comment-content">{{.Content}}</h4>
+              <form class="Method" method="post" action="/like?postId={{ $.PostData.ID }}&commentId={{ .ID }}">
+                <button type="submit" style="background: none; border: none; cursor: pointer;">
+                  {{if not .Liked}}
+                      <i class='bx bxs-like' style='font-size: 15px; color: white;'></i>
+                      <span style="font-size: 15px; color: white;">{{.LikesNumber}}</span>
+                  {{else}}
+                      <i class='bx bxs-like' style='font-size: 15px; color: orange;'></i>
+                      <span style="font-size: 15px; color: orange;">{{.LikesNumber}}</span>
+                  {{end}}
+                </button>
+              </form>
+            </div>
+          </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function transformToTextarea(element) {
+        const value = element.textContent.trim();
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        let maxLength = 256;
+
+        if (element.id == "post-title"){
+          textarea.style.height = 'auto';
+          textarea.rows = 1;
+        } else if (element.id == "post-content"){
+          maxLength = 4000;
+        }
+        element.replaceWith(textarea);
+        textarea.focus();
+        
+        const counter = document.createElement('div');
+        counter.textContent = `${textarea.value.length}/${maxLength}`;
+        textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+
+        textarea.addEventListener('input', function() {
+            let newValue = textarea.value.trim();
+            if (newValue.length > maxLength) {
+                newValue = newValue.slice(0, maxLength);
+                textarea.value = newValue;
+            }
+
+            const remainingChars = maxLength - newValue.length;
+            counter.textContent = `${newValue.length}/${maxLength}`;
+        });
+
+        textarea.addEventListener('blur', function() {
+            const newValue = textarea.value.trim();
+            element.textContent = newValue;
+            textarea.replaceWith(element);
+
+            if (element.id == "post-title"){
+              window.location.href = '/post/edit?id={{.PostData.ID}}&title=' + encodeURIComponent(newValue);
+            } else if (element.id == "post-content"){
+              window.location.href = '/post/edit?id={{.PostData.ID}}&content=' + encodeURIComponent(newValue);
+            }
+        });
+    }
+
+    let editableElements = document.querySelectorAll(".editable");
+    for (var i = 0; i < editableElements.length; i++) {
+        editableElements[i].addEventListener("click", function (e) {
+          transformToTextarea(this);
+        });
+    }
+  </script>
+</body>

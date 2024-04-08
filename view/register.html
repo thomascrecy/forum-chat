@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>Cathub - S'inscrire</title>
+</head>
+<body class="centered-page">
+    <a href="/" class="back-arrow">
+      <i class='bx bx-arrow-back'></i>
+    </a>
+    <div class="login-container">
+        <form action="/register" method="POST">
+            <h1>Register</h1>
+            <div class="input-box">
+                <input type="text" name="username" placeholder="Username" value="{{.Username}}" required>
+                <i class='bx bxs-user-circle' ></i>
+            </div>
+            <p class="alertMessage">{{.UsernameMessage}}</p>
+            <div class="input-box">
+                <input type="text" name="email" placeholder="Email" value="{{.Email}}" required>
+                <i class='bx bxs-envelope' ></i>
+            </div>
+            <p class="alertMessage">{{.EmailMessage}}</p>
+            <div class="input-box">
+                <input type="password" name="password" placeholder="Password" required>
+                <i class='bx bxs-lock-alt'></i>
+            </div>
+            <p class="alertMessage">{{.PasswordMessage}}</p>
+            <button type="submit" class="btn">S'inscrire</button>
+            <p class="alertMessage">{{.GlobalMessage}}</p>
+            <div class="register-link">
+                <p>
+                    Vous avez déjà un compte? <a href="login">Connectez-vous !</a>
+                </p>
+        </form>
+    </div>
+</body>

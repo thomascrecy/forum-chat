@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>Cathub</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body class="index-body">
+    <header class="index-header">
+      <a href="/">
+        <div class="container-logo">
+            <i class='bx bxs-cat'></i>
+            <h1>CAT</h1>
+            <h1 style="color: orange;">HUB</h1>
+        </div>
+      </a>
+      <div class="buttons-container-header">
+          {{if .IsAuth}}
+            <button class="rounded-button-post create-post-button" onclick="window.location.href = '/post'">+ Create Post</button>
+            <a href="/profile" class="profil-button">
+              <img src="{{if not .CurrentUser.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.CurrentUser.ID}}{{end}}" alt="profile" class="profile-picture header">
+            </a>
+          {{else}}
+            <a href="/login" class="rounded-button login login-button">Login</a>
+            <a href="/register" class="rounded-button register register-button">Register</a>
+          {{end}}
+        </div>
+    </header>
+    <div class="body-container">
+        <div class="d-flex">
+          <!--LEFTPANE / COMMUNAUTES-->
+          <div class="leftpane">
+            <div class="list-container-left">
+              <h2><u>RACES</u></h2>
+              <div class="races">
+                {{range .Communities}}
+                  <div>
+                    <a href="/race/{{.Cid}}">{{.Name}}</a>
+                    <p>{{ .PostsNumber }} posts</p>
+                  </div>
+                {{end}}
+              </div>
+            </div>
+          </div>
+
+          <!--MIDDLEPANE / POSTS-->
+          <div class="middlepane">
+
+            <div class="filters">
+              <label for="filters-select"><b>Filtre :</b></label>
+              <select name="filters" id="filters-select">
+                <option value="date-up">Les plus récents</option>
+                <option value="date-down">Les plus vieux</option>
+                <option value="likes">Likes</option>
+                <option value="comments">Commentaires</option>
+              </select>
+            </div>
+
+            <div class="posts">
+              {{if not .Posts}}
+                <p>Aucun post pour le moment...</p>
+              {{end}}
+
+              {{range .Posts}}
+              <li class="button-container-post">
+                <button onclick="redirectToPost('{{.ID}}')" class="book4">
+                    <div class="post-info">
+                      <div class="post-info-header">
+                        <img src="{{if not .AuthorData.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.AuthorData.ID}}{{end}}" alt="profile" class="profile-picture mini">
+                        <h4 class="post-author"><a href="/profile?user={{.AuthorData.ID}}">{{.AuthorData.Username}}</a> - {{.CreatedAtFormatted}} | <a class="community-tag" href="/race/{{.Community.Cid}}">{{.Community.Name}}</a></h4>  
+                      </div>
+                      <h2 class="post-title">{{.Title}}</h2>
+                      <h4 class="post-content">{{.Content}}</h4>
+                      <div class="post-tags-container">
+                        {{range .Tags}}
+                          <div class="post-tags" style="background-color: #{{.Color}};">
+                            <h3 >{{.Name}}</h3>
+                          </div>  
+                        {{end}}
+                      </div>
+                      <div class="post-vote">
+                        {{if not .Liked}}
+                          <i class='bx bxs-like'>{{.LikesNumber}}</i>
+                        {{else}}
+                          <i class='bx bxs-like' style='color: orange;'>{{.LikesNumber}}</i>
+                        {{end}}
+                        <i class='bx bxs-comment'>{{.CommentsLength}}</i>
+                      </div>
+                    </div>
+                </button>
+              </li>
+              {{end}}
+            </div>
+          </div>
+
+          <!--RIGHTPANE / TAGS-->
+          <div class="rightpane">
+            <div class="list-container-right">
+              <h2><u>TAGS</u></h2>
+              {{range .Tags}}
+              <div>
+                <button class="tag-button checkbox-button-label" data-tag="{{.Name}}" onclick="handleTagButtonClick(this)">{{.Name}}</button>
+              </div>
+            {{end}}
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        function redirectToPost(postID) {
+            window.location.href = '/post?id=' + encodeURIComponent(postID);
+        }
+
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterParam = urlParams.get('filter');
+        const tagsParam = urlParams.getAll('tag');
+      
+        if (filterParam && document.getElementById('filters-select').querySelector('option[value="' + filterParam + '"]')) {
+          document.getElementById('filters-select').value = filterParam;
+        }
+
+        tagsParam.forEach(tag => {
+          console.log("test ", tag)
+          let tagButton = document.querySelector(`[data-tag="${tag}"]`);
+          console.log(tagButton)
+          if (tagButton) {
+            tagButton.classList.add('selected');
+          }
+        });
+      
+      
+        function updateURLParams() {
+          var url = new URL(window.location.href);
+
+          var selectedFilters = document.getElementById('filters-select').value;
+          url.searchParams.set('filter', selectedFilters);
+      
+          var selectedTags = Array.from(document.querySelectorAll('.tag-button.selected')).map(tag => tag.textContent);
+          url.searchParams.delete('tag');
+          selectedTags.forEach(tag => {
+            url.searchParams.append('tag', tag);
+          });
+          window.history.pushState({}, '', url);
+
+          window.location.reload();
+        }
+      
+        function handleTagButtonClick(tagButton) {
+          tagButton.classList.toggle('selected');
+          updateURLParams();
+        }
+    
+        document.getElementById('filters-select').addEventListener('change', function() {
+          updateURLParams();
+        });
+    </script>
+</body>
+</html>

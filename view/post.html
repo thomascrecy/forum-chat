@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>Cathub - Poster</title>
+</head>
+<body class="centered-page">
+
+  <a onclick="window.history.go(-1); return false;" class="back-arrow">
+    <i class='bx bx-arrow-back'></i>
+  </a>
+
+    <form class="create-post-body" action="/post" method="POST">
+      <h1>Nouveau post</h1>
+
+      <!----- Communauté du post ----->
+      <div class="community-box">
+        <input type="text" name="community" placeholder="Race..." list="communities" required></input>
+      
+        <datalist id="communities">
+          {{range .AllCommunities}}
+            <option value="{{.Name}}">{{.Name}}</option>
+          {{end}}
+        </datalist>
+      </div>
+
+      <!----- Titre du post ----->
+      <div class="title-box">
+        <input type="text" name="title" placeholder="Titre..." maxlength="256" required></input>
+        <span class="counter" id="title-counter">0/256</span>
+      </div>
+
+      <!----- Contenu du post ----->
+      <div class="content-box">
+        <textarea name="content" rows="5" cols="50" placeholder="Contenu du post" maxlength="4000" required></textarea>
+        <span class="counter" id="content-counter">0/4000</span>
+      </div>
+
+      <p class="alertMessage">{{.GlobalMessage}}</p>
+      
+      <!----- Tags du post ----->
+      <div class="tags-box">
+      {{range .AllTags}}
+      <div class="checkbox-container">
+        <input type="checkbox" class="checkbox-button" id="tag{{.ID}}" name="tags" value="{{.ID}}" />
+        <label for="tag{{.ID}}" class="checkbox-button-label">{{.Name}}</label>
+      </div>
+      {{end}}
+      </div>
+      <!----- Bouton Submit ----->
+      <div class="submit-box">
+        <input type="submit" value="Poster"></input>
+      </div>
+    </form>
+
+    <script>
+      const titleInput = document.querySelector('input[name="title"]');
+      const titleCounter = document.getElementById('title-counter');
+      titleInput.addEventListener('input', function() {
+          const count = this.value.length;
+          titleCounter.textContent = count + '/256';
+      });
+
+      const contentTextarea = document.querySelector('textarea[name="content"]');
+      const contentCounter = document.getElementById('content-counter');
+      contentTextarea.addEventListener('input', function() {
+          const count = this.value.length;
+          contentCounter.textContent = count + '/4000';
+      });
+  </script>
+</body>

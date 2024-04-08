@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>Cathub - {{.User.Username}}</title>
+</head>
+<body class="index-body" style="overflow-y: scroll;">
+
+    <!--HEADER-->
+
+    <header class="index-header">
+        <a href="/">
+          <div class="container-logo">
+              <i class='bx bxs-cat'></i>
+              <h1>CAT</h1>
+              <h1 style="color: orange;">HUB</h1>
+          </div>
+        </a>
+        <div class="buttons-container-header">
+            {{if .IsAuth}}
+              <button class="rounded-button-post create-post-button" onclick="window.location.href = '/post'">+ Create Post</button>
+              {{if .IsCurrentUser}}
+                <form action="/logout" method="GET">
+                  <button class="rounded-button-post danger" type="submit">Déconnexion</button>
+                </form>
+              {{else}}
+                <a href="profile" class="profil-button">
+                  <img src="{{if not .CurrentUser.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.CurrentUser.ID}}{{end}}" alt="profile" class="profile-picture header">
+                </a>
+              {{end}}
+            {{else}}
+              <a href="login" class="rounded-button login login-button">Login</a>
+              <a href="register" class="rounded-button register register-button">Register</a>
+            {{end}}
+          </div>
+      </header>
+
+      <div class="profile-container">
+
+        <!--INFOS PROFILE-->
+
+        <div class="profile-info-global">
+          <div class="profile-info">
+            <div class="profile-info-left">
+              <img src="{{if not .User.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.User.ID}}{{end}}" alt="profile" class="profile-picture {{if .IsCurrentUser}}picture-editable{{end}}" id="user-image" {{if .IsCurrentUser}}onclick="chooseImage()"{{end}}>
+            </div>
+            <div class="profile-info-right">
+              <h1 class="profile-username {{if .IsCurrentUser}}editable{{end}}" id="user-name">{{.User.Username}}</h1>
+              <h4 class="profile-joined">Membre depuis: {{.User.CreatedAtFormatted}}</h4>
+              <h4 class="nomber-posts">Nombre de posts : {{len .Posts}}</h4>
+            </div>
+          </div>
+          <div class="profile-bio-container">
+            <h3 class="profile-bio {{if .IsCurrentUser}}editable{{end}}" id="user-bio">{{.User.Description}}</h3>
+          </div>
+        </div>
+
+        <!--POSTS DU PROFILE-->
+        {{if not .Posts}}
+          <p>Aucun post pour le moment...</p>
+        {{end}}
+
+        {{range .Posts}}
+          <li class="button-container-post">
+            <button onclick="redirectToPost('{{.ID}}')" class="book4">
+                <div class="post-info">
+                  <div class="post-info-header">
+                    <img src="{{if not .AuthorData.HasProfilePicture}}/static/cat.jpg{{else}}/image/user?id={{.AuthorData.ID}}{{end}}" alt="profile" class="profile-picture mini">
+                    <h4 class="post-author"><a href="/profile?user={{.AuthorData.ID}}">{{.AuthorData.Username}}</a> - {{.CreatedAtFormatted}} | <a class="community-tag" href="/race/{{.Community.Cid}}">{{.Community.Name}}</a></h4>  
+                  </div>
+                  <h2 class="post-title">{{.Title}}</h2>
+                  <h4 class="post-content">{{.Content}}</h4>
+                  <div class="post-tags-container">
+                    {{range .Tags}}
+                      <div class="post-tags" style="background-color: #{{.Color}};">
+                        <h3 >{{.Name}}</h3>
+                      </div>  
+                    {{end}}
+                  </div>
+                  <div class="post-vote">
+                    {{if not .Liked}}
+                      <i class='bx bxs-like'>{{.LikesNumber}}</i>
+                    {{else}}
+                      <i class='bx bxs-like' style='color: orange;'>{{.LikesNumber}}</i>
+                    {{end}}
+                    <i class='bx bxs-comment'>{{.CommentsLength}}</i>
+                  </div>
+                </div>
+            </button>
+          </li>
+          {{end}}
+      </div>
+
+      <script>
+        function redirectToPost(postID) {
+            window.location.href = '/post?id=' + encodeURIComponent(postID);
+        }
+
+        function transformToTextarea(element) {
+            const value = element.textContent.trim();
+            const textarea = document.createElement('textarea');
+            textarea.value = value;
+            textarea.style.height = 'auto';
+            let maxLength = 24;
+
+            if (element.id == "user-name"){
+              textarea.rows = 1;
+            } else if (element.id == "user-bio"){
+              textarea.rows = 7;
+              maxLength = 512;
+            }
+            element.replaceWith(textarea);
+            textarea.focus();
+            
+            const counter = document.createElement('div');
+            counter.textContent = `${textarea.value.length}/${maxLength}`;
+            textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+
+            textarea.addEventListener('input', function() {
+                let newValue = textarea.value.trim();
+                if (newValue.length > maxLength) {
+                    newValue = newValue.slice(0, maxLength);
+                    textarea.value = newValue;
+                }
+
+                const remainingChars = maxLength - newValue.length;
+                counter.textContent = `${newValue.length}/${maxLength}`;
+            });
+
+            textarea.addEventListener('blur', function() {
+                const newValue = textarea.value.trim();
+                element.textContent = newValue;
+                textarea.replaceWith(element);
+
+                if (element.id == "user-bio"){
+                  window.location.href = '/profile/edit?bio=' + encodeURIComponent(newValue);
+                } else if (element.id == "user-name"){
+                  window.location.href = '/profile/edit?name=' + encodeURIComponent(newValue);
+                }
+            });
+        }
+
+        let editableElements = document.querySelectorAll(".editable");
+        for (var i = 0; i < editableElements.length; i++) {
+            editableElements[i].addEventListener("click", function (e) {
+              transformToTextarea(this);
+            });
+        }
+
+        function chooseImage() {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+
+            let url = `${window.location.origin}/upload`;
+            let formData = new FormData();
+            formData.append('image', file);
+            
+            fetch(url, {
+              method: 'POST',
+              body: formData
+            }).then(function(response) {
+              window.location.reload();
+            }).catch(function(error) {
+              console.error('Erreur lors de la requête :', error);
+            });
+          }
+          input.click();
+        }
+
+        function deleteCookie(cookieName) {
+          document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          console.log("test ok")
+        }
+      </script>
+</body>
+</html>
