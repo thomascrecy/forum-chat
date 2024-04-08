@@ -15,7 +15,7 @@ Forum de discussion Cathub programmé en Golang portant sur les chats et tout ce
 - Accès au site: http://localhost:8080
 
 ## Remerciements
-- Thomas CRECY (membre du projet)
-- Yanice HOURCADE (membre du projet)
-- Antoine REBERAT (membre du projet)
-- Dillan HUON (membre du projet)
+- Thomas (membre du projet)
+- Yanice (membre du projet)
+- Antoine (membre du projet)
+- Dillan (membre du projet)
