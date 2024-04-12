@@ -9,8 +9,8 @@ Forum de discussion Cathub programmé en Golang portant sur les chats et tout ce
 - Un navigateur web
 
 ## Installation
-- Téléchargement: `git clone https://ytrack.learn.ynov.com/git/crthomas/forum.git`
-- Accès aux fichiers: `cd forum`
+- Téléchargement: `git clone https://github.com/thomascrecy/forum-chat.git`
+- Accès aux fichiers: `cd forum-chat`
 - Lancement du serveur web: `go run main.go`
 - Accès au site: http://localhost:8080
 
